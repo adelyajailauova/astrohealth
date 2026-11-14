@@ -69,7 +69,7 @@ function Shell({ user, onLogout, ...prefs }: Prefs & { user: User; onLogout: () 
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand"><span className="brand-mark" aria-hidden="true" />GaryshCare</div>
+        <div className="brand"><img className="brand-logo" src="/brand/garyshcare-icon.jpg" alt="" />GaryshCare</div>
         <nav className="nav">
           <NavLink to="/" end>{t(staff ? 'Crew' : 'My health')}</NavLink>
           {!staff && <NavLink to="/wellbeing">{t('Check-in')}</NavLink>}
@@ -120,11 +120,10 @@ export default function App() {
       <ThemeContext.Provider value={theme}>
         <MetaContext.Provider value={meta}>
           <UserContext.Provider value={user}>
+            <div className="photo-credit">Photo: NASA · ISS030-E-055569</div>
             <BrowserRouter>
               {user ? <Shell key={user.username} user={user} onLogout={logout} {...prefs} /> : (
                 <div className="app login-shell">
-                  <div className="login-photo" aria-hidden="true" />
-                  <div className="login-photo-credit">{theme === 'dark' ? 'Photo: NASA · ISS030-E-055569' : 'Photo: NASA · ISS040-E-062704'}</div>
                   <header className="topbar" style={{ position: 'relative', zIndex: 1 }}><div className="spacer" /><Toggles {...prefs} /></header>
                   {!checking && <LoginPage onLogin={setUser} />}
                 </div>

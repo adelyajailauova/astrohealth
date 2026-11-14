@@ -29,9 +29,6 @@
   --chart-1: #1d1d1f;
   --chart-2: #8e8e93;
   --band: rgba(0, 0, 0, 0.04);
-  --hero-photo: url('/space/earth-day-iss040e062704.jpg');
-  --hero-credit: 'Photo: NASA · ISS040-E-062704';
-  --page-photo: none;
   color-scheme: light;
 }
 
@@ -62,9 +59,6 @@
   --chart-1: #f5f5f7;
   --chart-2: #8e8e93;
   --band: rgba(255, 255, 255, 0.05);
-  --hero-photo: url('/space/earth-night-iss030e055569.jpg');
-  --hero-credit: 'Photo: NASA · ISS030-E-055569';
-  --page-photo: url('/space/earth-night-iss030e055569.jpg');
   color-scheme: dark;
 }
 
@@ -115,8 +109,6 @@ input[type='range'] { accent-color: var(--text); padding: 0; background: none; }
   background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: saturate(180%) blur(20px);
 }
 .brand { font-weight: 600; font-size: 17px; letter-spacing: -0.3px; display: flex; gap: 10px; align-items: center; }
-.brand-mark { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text); position: relative; }
-.brand-mark::after { content: ''; position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--alert); top: 2px; right: 1px; }
 .nav { display: flex; gap: 2px; background: var(--surface-2); padding: 3px; border-radius: var(--radius-ctl); }
 .nav a { color: var(--muted); text-decoration: none; padding: 6px 14px; border-radius: var(--radius-ctl); font-size: 14px; }
 .nav a:hover { color: var(--text); }
@@ -292,37 +284,35 @@ details[open] summary::before { content: '– '; }
 .signout { width: 100%; padding: 11px 14px; background: var(--alert-bg); color: var(--alert); font-weight: 600; }
 .signout:hover { background: var(--alert); color: #fff; }
 
-/* ---------- real space photography (NASA, public domain) ---------- */
-/* whole-page backdrop: only in dark theme, heavily dimmed so cards stay readable */
+/* ---------- real space photography: full-page starry-sky background (NASA, public domain) ---------- */
 body::before {
   content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.88) 55%, #000), var(--page-photo) center 70% / cover no-repeat;
+  background: url('/space/earth-night-iss030e055569.jpg') center 78% / cover no-repeat;
 }
-:root[data-theme='light'] body::before { display: none; }
+/* scrim keeps text readable; lighter at the top so the stars show */
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.6) 100%);
+}
+.photo-credit { position: fixed; right: 14px; bottom: 10px; z-index: 1; font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: rgba(255,255,255,.6); pointer-events: none; }
 
-/* page header becomes a photo "cover" tile with white text */
-.page-head {
-  position: relative; overflow: hidden; min-height: 210px; margin: 14px 0 20px; padding: 28px 30px 26px; border-radius: 24px;
-  align-items: flex-end; color: #fff;
-  background: linear-gradient(90deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.35) 55%, rgba(0,0,0,.1) 100%), var(--hero-photo) center 62% / cover no-repeat;
-}
-.page-head::after {
-  content: var(--hero-credit); position: absolute; right: 14px; bottom: 8px;
-  font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em; color: rgba(255,255,255,.55);
-}
-.page-head .page-title { color: #fff; font-size: 44px; text-shadow: 0 2px 20px rgba(0,0,0,.35); }
-.page-head .label, .page-head .page-sub { color: rgba(255,255,255,.78); }
-.page-head button { background: rgba(255,255,255,.16); color: #fff; backdrop-filter: blur(10px); }
-.page-head button:hover { background: rgba(255,255,255,.28); }
+/* everything placed directly on the sky reads as light-on-dark in both themes */
+.topbar { background: rgba(0,0,0,.35); backdrop-filter: saturate(160%) blur(18px); border-radius: 0 0 18px 18px; padding-left: 14px; padding-right: 14px; }
+.topbar .brand { color: #fff; }
+.topbar .nav { background: rgba(255,255,255,.12); }
+.topbar .nav a { color: rgba(255,255,255,.72); }
+.topbar .nav a:hover { color: #fff; }
+.topbar .nav a.active { background: #fff; color: #000; }
+.topbar .theme-toggle { background: rgba(255,255,255,.12); }
+.topbar .theme-toggle button { color: rgba(255,255,255,.7); }
+.topbar .theme-toggle button.on { background: #fff; color: #000; }
+.page-head { color: #fff; }
+.page-head .page-title { color: #fff; text-shadow: 0 2px 24px rgba(0,0,0,.5); }
+.page-head .label, .page-head .page-sub { color: rgba(255,255,255,.75); }
+.page-head button { background: rgba(255,255,255,.14); color: #fff; backdrop-filter: blur(10px); }
+.page-head button:hover { background: rgba(255,255,255,.26); }
 .page-head button.active { background: #fff; color: #000; }
 
-/* login: full-bleed photo behind the form */
-.login-photo {
-  position: fixed; inset: 0; z-index: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.6)), url('/space/earth-night-iss030e055569.jpg') center 65% / cover no-repeat;
-}
-:root[data-theme='light'] .login-photo {
-  background: linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.45)), url('/space/earth-day-iss040e062704.jpg') center 60% / cover no-repeat;
-}
-.login-photo-credit { position: fixed; right: 16px; bottom: 12px; z-index: 1; font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: rgba(255,255,255,.7); }
-.login-shell .topbar { background: transparent; backdrop-filter: none; }
+/* brand logo */
+.brand-logo { width: 34px; height: 34px; border-radius: 9px; display: block; box-shadow: 0 0 0 1px rgba(255,255,255,.18); }
+.login-logo { width: 132px; height: 132px; border-radius: 26px; display: block; margin: 0 auto; box-shadow: 0 0 0 1px var(--line); }
