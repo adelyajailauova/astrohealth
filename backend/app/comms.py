@@ -69,8 +69,13 @@ class Link:
             heapq.heappush(self._q, item)
         return out
 
-    def pending(self) -> dict:
+    def pending(self, crew_id: str | None = None) -> dict:
+        """Queue size; with crew_id, only that crew member's own reports and messages are counted."""
         counts: dict[str, int] = {}
+        total = 0
         for _, _, _, m in self._q:
+            if crew_id is not None and m["payload"].get("crew_id") != crew_id:
+                continue
             counts[m["priority"]] = counts.get(m["priority"], 0) + 1
-        return {"total": len(self._q), "by_priority": counts}
+            total += 1
+        return {"total": total, "by_priority": counts}

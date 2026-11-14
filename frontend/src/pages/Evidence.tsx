@@ -46,6 +46,14 @@ const RULES: { metric: string; rows: [string, string, string, 'source' | 'app'][
     ['Watch', 'Mood 2/5 or stress ≥ 4/5 → breathing / meditation offered', 'nasa_behavior', 'app'],
     ['Alert', 'Mood 1/5 → private psychologist conference offered', 'nasa_std3001_v1_3004', 'app'],
   ] },
+  { metric: 'cycle', rows: [
+    ['Normal', 'Cycle 24–38 days', 'owh_cycle', 'source'],
+    ['Watch', 'Cycle < 24 or > 38 days', 'owh_cycle', 'source'],
+    ['Watch', 'No period for 90+ days (without suppression)', 'owh_cycle', 'source'],
+    ['Watch', 'Very heavy flow (every 1–2 h) or bleeding > 8 days', 'owh_cycle', 'source'],
+    ['Normal', 'No bleeding while on suppression', 'npj_amenorrhea', 'source'],
+    ['Watch', 'Breakthrough bleeding while on suppression', 'npj_amenorrhea', 'app'],
+  ] },
   { metric: 'exercise', rows: [['Watch', '< 90 min/day (ISS routine ≈ 1.5 h)', 'nasa_fitness', 'source']] },
   { metric: 'radiation', rows: [
     ['Limit', 'Career effective dose < 600 mSv', 'nasa_std3001_v1_4030', 'source'],

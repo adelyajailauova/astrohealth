@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { cssVar, STATUS_LABEL, useMeta, useTheme } from './api'
+import { cssVar, get, STATUS_LABEL, useMeta, useTheme } from './api'
 import { unit, useLang, useT } from './i18n'
 import type { Status } from './api'
 
@@ -32,7 +32,7 @@ export function StatusBadge({ s }: { s: Status | string }) {
 
 /** Normal is deliberately neutral grey: colour appears only when something deviates. */
 const ZONE_FILL: Record<string, string> = {
-  normal: 'var(--zone)', watch: 'var(--watch)', alert: 'var(--alert)', critical: 'var(--critical)',
+  normal: 'var(--zone)', watch: 'var(--watch-fill)', alert: 'var(--alert)', critical: 'var(--critical)',
 }
 
 export function BodyFigure({ zones, selected, onSelect }: {
@@ -142,7 +142,7 @@ export function EcgStrip({ hr, irregular, status }: { hr: number; irregular: boo
     return () => cancelAnimationFrame(raf)
   }, [status, theme])
 
-  return <canvas ref={ref} style={{ width: '100%', height: 150, borderRadius: 14, display: 'block' }} />
+  return <canvas ref={ref} style={{ width: '100%', height: 150, borderRadius: 6, display: 'block' }} />
 }
 
 const TREND_CFG: Record<string, { keys: string[]; label: string; normal?: [number, number]; domain?: [number, number] }> = {
@@ -164,7 +164,7 @@ export function TrendChart({ crewId, metric }: { crewId: string; metric: string 
   useEffect(() => {
     let alive = true
     const load = () =>
-      fetch(`/api/history/${crewId}`).then((r) => r.json()).then((d) => {
+      get(`/api/history/${crewId}`).then((d: any) => {
         if (!alive) return
         const t0 = d.vitals.length ? d.vitals[d.vitals.length - 1].t : 0
         setData(d.vitals.map((p: any) => ({ ...p, x: Math.round(p.t - t0) })))
@@ -186,7 +186,7 @@ export function TrendChart({ crewId, metric }: { crewId: string; metric: string 
           <YAxis tick={AXIS} axisLine={false} tickLine={false} domain={cfg.domain} allowDataOverflow />
           {cfg.normal && <ReferenceArea y1={cfg.normal[0]} y2={cfg.normal[1]} fill="var(--band)" fillOpacity={1} />}
           <Tooltip
-            contentStyle={{ background: 'var(--surface)', border: 'none', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,.12)', fontSize: 12 }}
+            contentStyle={{ background: 'var(--surface)', border: 'none', borderRadius: 6, boxShadow: '0 4px 20px rgba(0,0,0,.12)', fontSize: 12 }}
             labelStyle={{ color: 'var(--muted)' }} itemStyle={{ color: 'var(--text)' }}
             labelFormatter={(l) => `${l} ${unit(lang, 's')}`} />
           {cfg.keys.map((k, i) => (
