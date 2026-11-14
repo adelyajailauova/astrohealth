@@ -1,5 +1,6 @@
 import { useMeta } from '../api'
 import { SourceList } from '../components'
+import { useT } from '../i18n'
 
 /** Every threshold used by the assessment engine, with its source. Mirrors backend/app/assess.py. */
 const RULES: { metric: string; rows: [string, string, string, 'source' | 'app'][] }[] = [
@@ -54,35 +55,36 @@ const RULES: { metric: string; rows: [string, string, string, 'source' | 'app'][
 
 export default function EvidencePage() {
   const meta = useMeta()
+  const t = useT()
   if (!meta) return null
   return (
     <>
     <div className="page-head">
       <div>
-        <div className="label">NASA · CSA · NIH · verified November 2026</div>
-        <h1 className="page-title">Evidence</h1>
+        <div className="label">{t('NASA · CSA · NIH · verified November 2026')}</div>
+        <h1 className="page-title">{t('Evidence')}</h1>
       </div>
     </div>
     <div className="grid">
       <div className="card">
-        <h2>How to read this</h2>
+        <h2>{t('How to read this')}</h2>
         <p style={{ marginTop: 0, maxWidth: 820 }}>
-          Every threshold used by the onboard assessment engine is listed here with its source.
-          <span className="badge source" style={{ margin: '0 6px' }}>Cited threshold</span> means the number is taken directly from the cited page.
-          <span className="badge app" style={{ margin: '0 6px' }}>App rule</span> marks our own design choice for when to escalate to the ground – to be validated by flight surgeons.
+          {t('Every threshold used by the onboard assessment engine is listed here with its source.')}{' '}
+          <span className="badge source" style={{ margin: '0 6px' }}>{t('Cited threshold')}</span> {t('means the number is taken directly from the cited page.')}{' '}
+          <span className="badge app" style={{ margin: '0 6px' }}>{t('App rule')}</span> {t('marks our own design choice for when to escalate to the ground – to be validated by flight surgeons.')}
         </p>
-        <p className="muted small">Clinical ranges are general adult references (NIH MedlinePlus / NHLBI). In a real mission they would be personalised to each astronaut's pre-flight baseline by the flight surgeon. Sensor data in this prototype is simulated.</p>
+        <p className="muted small">{t("Clinical ranges are general adult references (NIH MedlinePlus / NHLBI). In a real mission they would be personalised to each astronaut's pre-flight baseline by the flight surgeon. Sensor data in this prototype is simulated.")}</p>
       </div>
       <div className="card">
         <table>
-          <thead><tr><th>Indicator</th><th>Status</th><th>Rule</th><th>Type</th><th>Source</th></tr></thead>
+          <thead><tr><th>{t('Indicator')}</th><th>{t('Status')}</th><th>{t('Rule')}</th><th>{t('Type')}</th><th>{t('Source')}</th></tr></thead>
           <tbody>
             {RULES.flatMap((r) => r.rows.map((row, i) => (
               <tr key={r.metric + i}>
-                <td>{i === 0 ? <span style={{ fontWeight: 500 }}>{meta.metrics[r.metric].name}</span> : ''}</td>
-                <td>{row[0]}</td>
-                <td>{row[1]}</td>
-                <td><span className={`badge ${row[3]}`}>{row[3] === 'source' ? 'Cited' : 'App rule'}</span></td>
+                <td>{i === 0 ? <span style={{ fontWeight: 500 }}>{t(meta.metrics[r.metric].name)}</span> : ''}</td>
+                <td>{t(row[0])}</td>
+                <td>{t(row[1])}</td>
+                <td><span className={`badge ${row[3]}`}>{t(row[3] === 'source' ? 'Cited' : 'App rule')}</span></td>
                 <td><SourceList ids={[row[2]]} /></td>
               </tr>
             )))}
@@ -90,7 +92,8 @@ export default function EvidencePage() {
         </table>
       </div>
       <div className="card">
-        <h2>All sources (quotes verified against the live pages)</h2>
+        <h2>{t('All sources (quotes verified against the live pages)')}</h2>
+        <p className="small muted" style={{ marginTop: -6 }}>{t('Quotes are kept verbatim in the original language of the source.')}</p>
         <table>
           <tbody>
             {Object.entries(meta.sources).map(([id, s]) => (

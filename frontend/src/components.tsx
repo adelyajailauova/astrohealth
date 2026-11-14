@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { cssVar, STATUS_LABEL, useMeta, useTheme } from './api'
+import { unit, useLang, useT } from './i18n'
 import type { Status } from './api'
 
 export function SourceList({ ids, compact = false }: { ids: string[]; compact?: boolean }) {
   const meta = useMeta()
+  const t = useT()
   if (!meta) return null
   return (
     <div className="src">
-      {compact ? 'Source: ' : null}
+      {compact ? t('Source: ') : null}
       {ids.map((id, i) => {
         const s = meta.sources[id]
         if (!s) return null
@@ -24,7 +26,8 @@ export function SourceList({ ids, compact = false }: { ids: string[]; compact?: 
 }
 
 export function StatusBadge({ s }: { s: Status | string }) {
-  return <span className={`badge ${s}`}>{STATUS_LABEL[s as Status] ?? s}</span>
+  const t = useT()
+  return <span className={`badge ${s}`}>{t(STATUS_LABEL[s as Status] ?? s)}</span>
 }
 
 /** Normal is deliberately neutral grey: colour appears only when something deviates. */
@@ -155,6 +158,8 @@ const AXIS = { fill: 'var(--muted)', fontSize: 11, fontFamily: 'var(--mono)' }
 
 export function TrendChart({ crewId, metric }: { crewId: string; metric: string }) {
   const [data, setData] = useState<any[]>([])
+  const t = useT()
+  const lang = useLang()
   const cfg = TREND_CFG[metric] ?? TREND_CFG.hr
   useEffect(() => {
     let alive = true
@@ -171,19 +176,19 @@ export function TrendChart({ crewId, metric }: { crewId: string; metric: string 
   return (
     <div>
       <div className="row" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
-        <span className="label">{cfg.label}</span>
-        <span className="label" style={{ color: 'var(--faint)' }}>Last 5 min · band = normal at rest</span>
+        <span className="label">{t(cfg.label)}</span>
+        <span className="label" style={{ color: 'var(--faint)' }}>{t('Last 5 min · band = normal at rest')}</span>
       </div>
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={data} margin={{ top: 10, right: 6, left: -18, bottom: 0 }}>
           <CartesianGrid stroke="var(--line)" vertical={false} />
-          <XAxis dataKey="x" tick={AXIS} axisLine={false} tickLine={false} unit="s" type="number" domain={['dataMin', 0]} />
+          <XAxis dataKey="x" tick={AXIS} axisLine={false} tickLine={false} unit={unit(lang, 's')} type="number" domain={['dataMin', 0]} />
           <YAxis tick={AXIS} axisLine={false} tickLine={false} domain={cfg.domain} allowDataOverflow />
           {cfg.normal && <ReferenceArea y1={cfg.normal[0]} y2={cfg.normal[1]} fill="var(--band)" fillOpacity={1} />}
           <Tooltip
             contentStyle={{ background: 'var(--surface)', border: 'none', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,.12)', fontSize: 12 }}
             labelStyle={{ color: 'var(--muted)' }} itemStyle={{ color: 'var(--text)' }}
-            labelFormatter={(l) => `${l}s`} />
+            labelFormatter={(l) => `${l} ${unit(lang, 's')}`} />
           {cfg.keys.map((k, i) => (
             <Line key={k} dataKey={k} stroke={LINE_COLORS[i]} dot={false} isAnimationActive={false} strokeWidth={1.75} />
           ))}
