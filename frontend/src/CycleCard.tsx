@@ -80,7 +80,7 @@ export default function CycleCard({ c }: { c: CrewState }) {
             <span className="small">{t('I use menstrual suppression (continuous hormonal contraception)')}</span>
           </label>
 
-          <div className="grid" style={{ gap: 10, padding: 14, background: 'var(--surface-2)', borderRadius: 14 }}>
+          <div className="grid" style={{ gap: 10, padding: 14, background: 'var(--surface-2)', borderRadius: 6 }}>
             <div className="label">{t(cycle.suppression ? 'Log bleeding' : 'Log period start')}</div>
             <div className="row" style={{ gap: 12 }}>
               <label className="grid" style={{ gap: 4 }}><span className="small muted">{t('First day')}</span>
