@@ -172,4 +172,19 @@ SOURCES: dict[str, dict] = {
         "quote": "About 8 percent of participants had a negative effect from practicing meditation ... "
         "most commonly reported negative effects were anxiety and depression.",
     },
+    "owh_cycle": {
+        "org": "HHS Office on Women's Health",
+        "title": "Your menstrual cycle",
+        "url": "https://www.womenshealth.gov/menstrual-cycle/your-menstrual-cycle",
+        "quote": "Your periods are still 'regular' if they usually come every 24 to 38 days ... if you don't have a period "
+        "for 90 days (three months), and you are not pregnant or breastfeeding, talk to your doctor or nurse ... "
+        "Bleeding through one or more pads or tampons every one to two hours ... Bleeding that often lasts longer than eight days.",
+    },
+    "npj_amenorrhea": {
+        "org": "npj Microgravity (2016)",
+        "title": "Jain & Wotring, Medically induced amenorrhea in female astronauts",
+        "url": "https://www.nature.com/articles/npjmgrav20168",
+        "quote": "During long-duration missions, female astronauts have often continuously taken the combined oral "
+        "contraceptive pill to induce amenorrhea.",
+    },
 }

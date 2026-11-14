@@ -93,6 +93,12 @@ METRICS: dict[str, dict] = {
         "how": "Logged automatically from exercise-device sessions and heart-rate zones.",
         "sources": ["nasa_bone", "nasa_fitness"],
     },
+    "cycle": {
+        "name": "Menstrual cycle", "unit": "", "zone": "abdomen",
+        "why": "Female astronauts often suppress menstruation on long missions; tracking the cycle or breakthrough bleeding helps the flight surgeon manage supplies, hygiene and health.",
+        "how": "Opt-in and private. Log the first day of each period, flow and symptoms; turn on suppression if you use continuous hormonal contraception.",
+        "sources": ["npj_amenorrhea", "owh_cycle"],
+    },
     "radiation": {
         "name": "Radiation dose", "unit": "mSv", "zone": "body",
         "why": "Radiation is one of the most hazardous aspects of spaceflight; Moon and Mars missions leave Earth's magnetosphere.",
@@ -233,7 +239,36 @@ def assess_radiation(career_msv: float) -> Finding:
     return Finding("radiation", NORMAL, "Within limit", "Keep following ALARA.", ["nasa_std3001_v1_4030"], "source", v)
 
 
-def assess_all(v: dict, checkin: dict | None, baseline_sys: float) -> list[Finding]:
+def assess_cycle(cycle: dict | None, today) -> Finding | None:
+    """Menstrual-cycle rules (opt-in). Thresholds from HHS Office on Women's Health."""
+    from datetime import date as _date
+    if not cycle or not cycle.get("enabled"):
+        return None
+    periods = sorted(cycle.get("periods", []), key=lambda p: p["start"])
+    if cycle.get("suppression"):
+        recent = [p for p in periods if (today - _date.fromisoformat(p["start"])).days <= 30]
+        if recent:
+            return Finding("cycle", WATCH, "Breakthrough bleeding on suppression", "Log flow daily. Flight surgeon reviews the regimen and hygiene supplies.", ["npj_amenorrhea"], "app", "Suppression on")
+        return Finding("cycle", NORMAL, "No bleeding – expected with suppression", "No action needed.", ["npj_amenorrhea"], "source", "Suppression on")
+    if not periods:
+        return Finding("cycle", NORMAL, "No periods logged yet", "Log the first day of your next period.", ["owh_cycle"], "source", "")
+    last = periods[-1]
+    day = (today - _date.fromisoformat(last["start"])).days + 1
+    length = None
+    if len(periods) >= 2:
+        length = (_date.fromisoformat(last["start"]) - _date.fromisoformat(periods[-2]["start"])).days
+    value = f"Cycle day {day}" + (f" · last cycle {length} d" if length else "")
+    recent = day <= 14
+    if recent and (last.get("flow") == "very_heavy" or (last.get("days") or 0) > 8):
+        return Finding("cycle", WATCH, "Signs of heavy bleeding", "Flight surgeon notified privately. Hydrate and report dizziness or fatigue.", ["owh_cycle"], "source", value)
+    if day > 90:
+        return Finding("cycle", WATCH, "No period for over 90 days", "Discuss with the flight surgeon at the next private conference.", ["owh_cycle"], "source", value)
+    if length is not None and (length < 24 or length > 38):
+        return Finding("cycle", WATCH, "Cycle length outside 24–38 days", "Keep logging; the flight surgeon reviews the trend.", ["owh_cycle"], "source", value)
+    return Finding("cycle", NORMAL, "Regular cycle", "Keep logging the first day of each period.", ["owh_cycle"], "source", value)
+
+
+def assess_all(v: dict, checkin: dict | None, baseline_sys: float, cycle: dict | None = None) -> list[Finding]:
     symptoms = set((checkin or {}).get("symptoms", [])) | set(v.get("symptoms", []))
     out = [
         assess_hr(v["hr"], v["activity"]),
@@ -250,6 +285,10 @@ def assess_all(v: dict, checkin: dict | None, baseline_sys: float) -> list[Findi
                   assess_mood(checkin.get("mood"), checkin.get("stress"))):
             if f:
                 out.append(f)
+    from datetime import date as _date
+    cf = assess_cycle(cycle, _date.today())
+    if cf:
+        out.append(cf)
     return out
 
 

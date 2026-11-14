@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { cssVar, STATUS_LABEL, useMeta, useTheme } from './api'
+import { cssVar, get, STATUS_LABEL, useMeta, useTheme } from './api'
 import { unit, useLang, useT } from './i18n'
 import type { Status } from './api'
 
@@ -32,7 +32,7 @@ export function StatusBadge({ s }: { s: Status | string }) {
 
 /** Normal is deliberately neutral grey: colour appears only when something deviates. */
 const ZONE_FILL: Record<string, string> = {
-  normal: 'var(--zone)', watch: 'var(--watch)', alert: 'var(--alert)', critical: 'var(--critical)',
+  normal: 'var(--zone)', watch: 'var(--watch-fill)', alert: 'var(--alert)', critical: 'var(--critical)',
 }
 
 export function BodyFigure({ zones, selected, onSelect }: {
@@ -164,7 +164,7 @@ export function TrendChart({ crewId, metric }: { crewId: string; metric: string 
   useEffect(() => {
     let alive = true
     const load = () =>
-      fetch(`/api/history/${crewId}`).then((r) => r.json()).then((d) => {
+      get(`/api/history/${crewId}`).then((d: any) => {
         if (!alive) return
         const t0 = d.vitals.length ? d.vitals[d.vitals.length - 1].t : 0
         setData(d.vitals.map((p: any) => ({ ...p, x: Math.round(p.t - t0) })))

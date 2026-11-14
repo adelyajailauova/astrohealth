@@ -7,7 +7,7 @@ import { agoL, unit, useLang, useT } from '../i18n'
 
 const ZONE_NAMES: Record<string, string> = {
   heart: 'Heart and circulation', lungs: 'Lungs and oxygen', head: 'Brain, sleep and mood',
-  abdomen: 'Metabolism', legs: 'Bones and muscles', body: 'Whole body · radiation',
+  abdomen: 'Metabolism and reproductive health', legs: 'Bones and muscles', body: 'Whole body · radiation',
 }
 const TREND_METRICS = new Set(['hr', 'rhythm', 'bp', 'spo2', 'rr', 'temp'])
 
@@ -123,7 +123,8 @@ export default function CrewPage({ state }: { state: OnboardState | null }) {
   const [open, setOpen] = useState<{ zone: string; metric: string } | null>(null)
   if (!state || !meta || !state.crew.length) return <div className="label" style={{ marginTop: 40 }}>{t('Connecting to onboard health node')}</div>
   const c = state.crew.find((x) => x.id === crewId) ?? state.crew[0]
-  const urgent = c.findings.filter((f) => f.level >= 2).sort((a, b) => b.level - a.level)
+  const urgent = c.findings.filter((f) => f.level >= 1).sort((a, b) => b.level - a.level)
+  const watchCount = c.findings.filter((f) => f.level >= 1).length
   const inbox = state.inbox[c.id] ?? []
   const openMetric = (m: string) => setOpen({ zone: meta.metrics[m].zone, metric: m })
   const openZone = (z: string) => {
@@ -138,13 +139,13 @@ export default function CrewPage({ state }: { state: OnboardState | null }) {
           <div className="label">{t(c.role)} · {t(c.vitals.activity)}</div>
           <h1 className="page-title">{c.name}</h1>
         </div>
-        <div className="row">
+        {state.crew.length > 1 && <div className="row">
           {state.crew.map((x) => (
             <button key={x.id} className={x.id === c.id ? 'active' : ''} onClick={() => setCrewId(x.id)}>
               <span className="row" style={{ gap: 8 }}><span className={`dot ${x.overall}`} />{x.name.split(' ').slice(-1)}</span>
             </button>
           ))}
-        </div>
+        </div>}
       </div>
 
       <div className="grid">
@@ -154,7 +155,10 @@ export default function CrewPage({ state }: { state: OnboardState | null }) {
             <div style={{ flex: 1 }}>
               <div className={`banner-title status ${urgent[0].status}`}>{t(meta.metrics[urgent[0].metric].name)}: {t(urgent[0].label)}</div>
               <div style={{ marginTop: 2 }}>{t(urgent[0].advice)}</div>
-              <div className="label" style={{ marginTop: 8 }}>{t('Report sent to Mission Control automatically · arrives in')} {state.link.demo_delay_s.toFixed(1)} {unit(lang, 's')}</div>
+              <div className="label" style={{ marginTop: 8 }}>
+                {urgent[0].level >= 2 ? `${t('Report sent to Mission Control automatically · arrives in')} ${state.link.demo_delay_s.toFixed(1)} ${unit(lang, 's')}` : t('Flight surgeon sees this in the next report')}
+                {watchCount > 1 && ` · ${t('more items need attention')}: ${watchCount - 1}`}
+              </div>
             </div>
             <span className="label">{t('Details')} →</span>
           </div>
