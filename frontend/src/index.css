@@ -29,6 +29,9 @@
   --chart-1: #1d1d1f;
   --chart-2: #8e8e93;
   --band: rgba(0, 0, 0, 0.04);
+  --hero-photo: url('/space/earth-day-iss040e062704.jpg');
+  --hero-credit: 'Photo: NASA · ISS040-E-062704';
+  --page-photo: none;
   color-scheme: light;
 }
 
@@ -59,6 +62,9 @@
   --chart-1: #f5f5f7;
   --chart-2: #8e8e93;
   --band: rgba(255, 255, 255, 0.05);
+  --hero-photo: url('/space/earth-night-iss030e055569.jpg');
+  --hero-credit: 'Photo: NASA · ISS030-E-055569';
+  --page-photo: url('/space/earth-night-iss030e055569.jpg');
   color-scheme: dark;
 }
 
@@ -270,6 +276,53 @@ details[open] summary::before { content: '– '; }
 .statusbar .seg.state.alert, .statusbar .seg.state.critical { background: var(--alert); color: #fff; }
 .statusbar .seg.state.alert .dot, .statusbar .seg.state.critical .dot { background: #fff; }
 
-/* ---------- star field background ---------- */
-.starfield { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
 .app { position: relative; z-index: 1; }
+
+/* ---------- account menu ---------- */
+.account { position: relative; }
+.account-btn { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.account-btn:hover { background: var(--surface-2); }
+.account-name { font-size: 13px; font-weight: 500; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.avatar { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--text); color: var(--invert); font-size: 11px; font-weight: 600; letter-spacing: .02em; flex: none; }
+.avatar.lg { width: 44px; height: 44px; font-size: 15px; }
+.account-pop {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; width: min(290px, calc(100vw - 32px)); display: grid; gap: 14px; padding: 18px;
+  background: var(--surface); border-radius: 18px; box-shadow: 0 0 0 1px var(--line), 0 18px 50px rgba(0,0,0,.22); animation: fade .15s ease-out;
+}
+.signout { width: 100%; padding: 11px 14px; background: var(--alert-bg); color: var(--alert); font-weight: 600; }
+.signout:hover { background: var(--alert); color: #fff; }
+
+/* ---------- real space photography (NASA, public domain) ---------- */
+/* whole-page backdrop: only in dark theme, heavily dimmed so cards stay readable */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.88) 55%, #000), var(--page-photo) center 70% / cover no-repeat;
+}
+:root[data-theme='light'] body::before { display: none; }
+
+/* page header becomes a photo "cover" tile with white text */
+.page-head {
+  position: relative; overflow: hidden; min-height: 210px; margin: 14px 0 20px; padding: 28px 30px 26px; border-radius: 24px;
+  align-items: flex-end; color: #fff;
+  background: linear-gradient(90deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.35) 55%, rgba(0,0,0,.1) 100%), var(--hero-photo) center 62% / cover no-repeat;
+}
+.page-head::after {
+  content: var(--hero-credit); position: absolute; right: 14px; bottom: 8px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em; color: rgba(255,255,255,.55);
+}
+.page-head .page-title { color: #fff; font-size: 44px; text-shadow: 0 2px 20px rgba(0,0,0,.35); }
+.page-head .label, .page-head .page-sub { color: rgba(255,255,255,.78); }
+.page-head button { background: rgba(255,255,255,.16); color: #fff; backdrop-filter: blur(10px); }
+.page-head button:hover { background: rgba(255,255,255,.28); }
+.page-head button.active { background: #fff; color: #000; }
+
+/* login: full-bleed photo behind the form */
+.login-photo {
+  position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.6)), url('/space/earth-night-iss030e055569.jpg') center 65% / cover no-repeat;
+}
+:root[data-theme='light'] .login-photo {
+  background: linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.45)), url('/space/earth-day-iss040e062704.jpg') center 60% / cover no-repeat;
+}
+.login-photo-credit { position: fixed; right: 16px; bottom: 12px; z-index: 1; font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: rgba(255,255,255,.7); }
+.login-shell .topbar { background: transparent; backdrop-filter: none; }

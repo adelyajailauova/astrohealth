@@ -32,8 +32,8 @@ export default function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
   }
 
   return (
-    <div style={{ minHeight: '80vh', display: 'grid', placeItems: 'center', padding: '24px 0' }}>
-      <form className="card" onSubmit={submit} style={{ width: 'min(420px, 100%)', padding: 28, display: 'grid', gap: 18 }}>
+    <div style={{ minHeight: '80vh', display: 'grid', placeItems: 'center', padding: '24px 0', position: 'relative', zIndex: 1 }}>
+      <form className="card" onSubmit={submit} style={{ width: 'min(420px, 100%)', padding: 28, display: 'grid', gap: 18, boxShadow: '0 30px 80px rgba(0,0,0,.45)' }}>
         <div>
           <div className="brand" style={{ marginBottom: 18 }}><span className="brand-mark" aria-hidden="true" />GaryshCare</div>
           <h1 className="page-title" style={{ fontSize: 32 }}>{t('Sign in')}</h1>

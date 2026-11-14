@@ -9,7 +9,7 @@ import EvidencePage from './pages/Evidence'
 import GroundPage from './pages/Ground'
 import WellbeingPage from './pages/Wellbeing'
 import LoginPage from './pages/Login'
-import Starfield from './Starfield'
+import AccountMenu from './AccountMenu'
 import { Navigate } from 'react-router-dom'
 
 const ORDER = ['normal', 'watch', 'alert', 'critical']
@@ -79,10 +79,7 @@ function Shell({ user, onLogout, ...prefs }: Prefs & { user: User; onLogout: () 
         <div className="spacer" />
         <LinkBar s={onboard} staff={staff} />
         <Toggles {...prefs} />
-        <div className="row" style={{ gap: 8 }}>
-          <span className="pill" title={user.username}>{t(staff ? 'Medical staff' : 'Astronaut')} · {t(user.name)}</span>
-          <button onClick={onLogout} style={{ fontSize: 13, padding: '6px 12px' }}>{t('Sign out')}</button>
-        </div>
+        <AccountMenu user={user} onLogout={onLogout} />
       </header>
       <Routes>
         <Route path="/" element={<CrewPage state={onboard} />} />
@@ -123,11 +120,12 @@ export default function App() {
       <ThemeContext.Provider value={theme}>
         <MetaContext.Provider value={meta}>
           <UserContext.Provider value={user}>
-            <Starfield />
             <BrowserRouter>
               {user ? <Shell key={user.username} user={user} onLogout={logout} {...prefs} /> : (
-                <div className="app">
-                  <header className="topbar"><div className="spacer" /><Toggles {...prefs} /></header>
+                <div className="app login-shell">
+                  <div className="login-photo" aria-hidden="true" />
+                  <div className="login-photo-credit">{theme === 'dark' ? 'Photo: NASA · ISS030-E-055569' : 'Photo: NASA · ISS040-E-062704'}</div>
+                  <header className="topbar" style={{ position: 'relative', zIndex: 1 }}><div className="spacer" /><Toggles {...prefs} /></header>
                   {!checking && <LoginPage onLogin={setUser} />}
                 </div>
               )}
