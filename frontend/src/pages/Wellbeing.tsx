@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Bar, CartesianGrid, Line, ComposedChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { post } from '../api'
+import { get, post, useUser } from '../api'
 import type { Finding, OnboardState } from '../api'
+import CycleCard from '../CycleCard'
 import { SourceList, StatusBadge } from '../components'
 import { unit, useLang, useT } from '../i18n'
 
@@ -121,15 +122,20 @@ function Practice({ crewId, kind, onDone }: { crewId: string; kind: 'breathing' 
   )
 }
 
+const DEFAULTS = { mood: 3, stress: 3, sleep: 7, glucose: '', symptoms: [] as string[], journal: '' }
+
 export default function WellbeingPage({ state }: { state: OnboardState | null }) {
-  const [crewId, setCrewId] = useState('c1')
+  const user = useUser()
+  const crewId = user?.crew_id ?? 'c1'
   const [mood, setMood] = useState(3)
   const [stress, setStress] = useState(3)
-  const [sleep, setSleep] = useState(6.5)
+  const [sleep, setSleep] = useState(DEFAULTS.sleep)
   const [glucose, setGlucose] = useState('')
   const [symptoms, setSymptoms] = useState<string[]>([])
   const [journal, setJournal] = useState('')
-  const [result, setResult] = useState<{ findings: Finding[]; suggest_wellbeing: boolean } | null>(null)
+  const [result, setResult] = useState<{ findings: Finding[]; suggest_wellbeing: boolean; submitted_at: number; first_today: boolean; delivery_s: number } | null>(null)
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState('')
   const [tab, setTab] = useState<'breathing' | 'bodyscan'>('breathing')
   const [hist, setHist] = useState<any[]>([])
   const [refresh, setRefresh] = useState(0)
@@ -137,20 +143,29 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
   const lang = useLang()
 
   useEffect(() => {
-    fetch(`/api/history/${crewId}`).then((r) => r.json()).then((d) => setHist(d.checkins.map((c: any) => ({ ...c, day: c.date.slice(5) }))))
-    setResult(null)
+    get(`/api/history/${crewId}`).then((d: any) => setHist(d.checkins.map((c: any) => ({ ...c, day: c.date.slice(5) })))).catch(() => {})
   }, [crewId, refresh])
 
   if (!state) return <div className="label" style={{ marginTop: 40 }}>{t('Connecting')}</div>
   const c = state.crew.find((x) => x.id === crewId) ?? state.crew[0]
 
   const submit = async () => {
-    const r = await post('/api/checkin', {
-      crew_id: crewId, mood, stress, sleep_hours: sleep, glucose: glucose ? +glucose : null, symptoms, journal,
-    })
-    setResult(r)
-    setRefresh((x) => x + 1)
+    setSending(true); setSendError('')
+    try {
+      const r = await post('/api/checkin', {
+        crew_id: crewId, mood, stress, sleep_hours: sleep, glucose: glucose ? +glucose : null, symptoms, journal,
+      })
+      setResult(r)
+      // reset the form so it is obvious the entry went through
+      setMood(DEFAULTS.mood); setStress(DEFAULTS.stress); setSleep(DEFAULTS.sleep)
+      setGlucose(DEFAULTS.glucose); setSymptoms([]); setJournal(DEFAULTS.journal)
+      setRefresh((x) => x + 1)
+    } catch {
+      setSendError(t('Not sent. Check the connection and try again — your answers are kept.'))
+    } finally { setSending(false) }
   }
+  const fmtTime = (ts: number) => new Date(ts * 1000).toLocaleTimeString(lang === 'kk' ? 'kk-KZ' : lang === 'ru' ? 'ru-RU' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
+  const todaySent = c.checkin?.submitted_at && c.checkin.date === new Date().toISOString().slice(0, 10) ? c.checkin.submitted_at : null
 
   return (
     <>
@@ -165,10 +180,18 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
         <div className="card">
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <h2 style={{ margin: 0 }}>{t('Daily check-in')}</h2>
-            <select value={crewId} onChange={(e) => setCrewId(e.target.value)}>
-              {state.crew.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-            </select>
+            {todaySent && <span className="badge normal">{t('Sent today at')} {fmtTime(todaySent)}</span>}
           </div>
+          {result && (
+            <div className="banner" role="status" style={{ marginTop: 12, background: 'var(--surface-2)' }}>
+              <span className="dot normal" style={{ width: 9, height: 9 }} />
+              <div style={{ flex: 1 }}>
+                <div className="banner-title">{t(result.first_today ? 'Check-in sent' : 'Check-in updated')} · {fmtTime(result.submitted_at)}</div>
+                <div className="small muted">{t('Saved onboard. The flight surgeon receives it in')} {result.delivery_s.toFixed(1)} {unit(lang, 's')}. {t('The form has been cleared for the next entry.')}</div>
+              </div>
+              <button onClick={() => setResult(null)} style={{ fontSize: 13 }}>{t('Close')}</button>
+            </div>
+          )}
           <div className="grid" style={{ gap: 12, marginTop: 12 }}>
             <div className="row"><span className="muted" style={{ width: 150 }}>{t('Mood')}</span><Scale value={mood} onChange={setMood} words={MOOD_WORDS} /></div>
             <div className="row"><span className="muted" style={{ width: 150 }}>{t('Stress (1 low – 5 high)')}</span><Scale value={stress} onChange={setStress} /></div>
@@ -195,10 +218,14 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
               <div className="muted" style={{ marginBottom: 6 }}>{t('Private journal (NASA encourages journaling for morale)')}</div>
               <textarea rows={3} value={journal} onChange={(e) => setJournal(e.target.value)} placeholder={t('One thing that went well today…')} />
             </div>
-            <div><button className="primary" onClick={submit}>{t('Submit check-in (+10 pts)')}</button></div>
+            <div className="row">
+              <button className="primary" onClick={submit} disabled={sending}>{t(sending ? 'Sending…' : todaySent ? 'Update check-in' : 'Submit check-in (+10 pts)')}</button>
+              {sendError && <span className="status alert small" role="alert">{sendError}</span>}
+            </div>
           </div>
           {result && (
             <div style={{ marginTop: 14 }}>
+              <div className="label" style={{ marginBottom: 4 }}>{t('Assessment of your answers')}</div>
               {result.findings.map((f) => (
                 <div key={f.metric} className="event">
                   <div className="row"><StatusBadge s={f.status} /><b style={{ fontWeight: 500 }}>{t(f.label)}</b><span className="muted small">{t(f.value)}</span></div>
@@ -232,6 +259,7 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
           <div className="small muted">{t('Earlier days are seeded demo data. Recommended sleep: 7–9 h.')}</div>
           <SourceList ids={['nhlbi_sleep']} compact />
         </div>
+        <CycleCard c={c} />
       </div>
 
       <div className="grid" style={{ alignContent: 'start' }}>
