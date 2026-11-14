@@ -1,9 +1,9 @@
-/* AstroHealth design tokens
+/* GaryshCare design tokens
    Direction: Apple Health structure (tiles, large tight type) + instrument precision
    (mono micro-labels, dot grid, red used only as a signal). Color = deviation only. */
 
 :root, :root[data-theme='light'] {
-  --bg: #f5f5f7;
+  --bg: #eef1f6;
   --surface: #ffffff;
   --surface-2: #f0f0f2;
   --surface-3: #e8e8ed;
@@ -17,6 +17,7 @@
   --silhouette: #ececf0;
   --dotgrid: rgba(0, 0, 0, 0.09);
   --ok: #248a3d;
+  --ok-bg: #e3f5e8;
   --watch: #a34a00;
   --watch-fill: #ff9f0a;
   --on-watch: #3d1f00;
@@ -46,6 +47,7 @@
   --silhouette: #232325;
   --dotgrid: rgba(255, 255, 255, 0.08);
   --ok: #30d158;
+  --ok-bg: rgba(48, 209, 88, 0.16);
   --watch: #ffb340;
   --watch-fill: #ff9f0a;
   --on-watch: #2b1600;
@@ -107,8 +109,6 @@ input[type='range'] { accent-color: var(--text); padding: 0; background: none; }
   background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: saturate(180%) blur(20px);
 }
 .brand { font-weight: 600; font-size: 17px; letter-spacing: -0.3px; display: flex; gap: 10px; align-items: center; }
-.brand-mark { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--text); position: relative; }
-.brand-mark::after { content: ''; position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--alert); top: 2px; right: 1px; }
 .nav { display: flex; gap: 2px; background: var(--surface-2); padding: 3px; border-radius: var(--radius-ctl); }
 .nav a { color: var(--muted); text-decoration: none; padding: 6px 14px; border-radius: var(--radius-ctl); font-size: 14px; }
 .nav a:hover { color: var(--text); }
@@ -249,3 +249,70 @@ details[open] summary::before { content: '– '; }
 .vitals-big { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .vitals-big .vital { padding: 18px 20px 16px; border-radius: 20px; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; }
 @media (max-width: 1100px) { .vitals-big { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- mission status bar (highlighted box in the header) ---------- */
+.statusbar {
+  display: inline-flex; align-items: stretch; flex-wrap: wrap; overflow: hidden;
+  background: var(--surface); border-radius: 14px; box-shadow: inset 0 0 0 1px var(--line-strong), 0 1px 2px rgba(0,0,0,.06);
+}
+.statusbar .seg {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text); white-space: nowrap;
+}
+.statusbar .seg + .seg { box-shadow: inset 1px 0 0 var(--line); }
+.statusbar .seg b { font-weight: 600; }
+.statusbar .seg.state.normal { background: var(--ok-bg); color: var(--ok); }
+.statusbar .seg.state.watch { background: var(--watch-fill); color: var(--on-watch); }
+.statusbar .seg.state.watch .dot { background: var(--on-watch); box-shadow: none; }
+.statusbar .seg.state.alert, .statusbar .seg.state.critical { background: var(--alert); color: #fff; }
+.statusbar .seg.state.alert .dot, .statusbar .seg.state.critical .dot { background: #fff; }
+
+.app { position: relative; z-index: 1; }
+
+/* ---------- account menu ---------- */
+.account { position: relative; }
+.account-btn { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.account-btn:hover { background: var(--surface-2); }
+.account-name { font-size: 13px; font-weight: 500; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.avatar { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--text); color: var(--invert); font-size: 11px; font-weight: 600; letter-spacing: .02em; flex: none; }
+.avatar.lg { width: 44px; height: 44px; font-size: 15px; }
+.account-pop {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; width: min(290px, calc(100vw - 32px)); display: grid; gap: 14px; padding: 18px;
+  background: var(--surface); border-radius: 18px; box-shadow: 0 0 0 1px var(--line), 0 18px 50px rgba(0,0,0,.22); animation: fade .15s ease-out;
+}
+.signout { width: 100%; padding: 11px 14px; background: var(--alert-bg); color: var(--alert); font-weight: 600; }
+.signout:hover { background: var(--alert); color: #fff; }
+
+/* ---------- real space photography: full-page starry-sky background (NASA, public domain) ---------- */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: url('/space/earth-night-iss030e055569.jpg') center 78% / cover no-repeat;
+}
+/* scrim keeps text readable; lighter at the top so the stars show */
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.6) 100%);
+}
+.photo-credit { position: fixed; right: 14px; bottom: 10px; z-index: 1; font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: rgba(255,255,255,.6); pointer-events: none; }
+
+/* everything placed directly on the sky reads as light-on-dark in both themes */
+.topbar { background: rgba(0,0,0,.35); backdrop-filter: saturate(160%) blur(18px); border-radius: 0 0 18px 18px; padding-left: 14px; padding-right: 14px; }
+.topbar .brand { color: #fff; }
+.topbar .nav { background: rgba(255,255,255,.12); }
+.topbar .nav a { color: rgba(255,255,255,.72); }
+.topbar .nav a:hover { color: #fff; }
+.topbar .nav a.active { background: #fff; color: #000; }
+.topbar .theme-toggle { background: rgba(255,255,255,.12); }
+.topbar .theme-toggle button { color: rgba(255,255,255,.7); }
+.topbar .theme-toggle button.on { background: #fff; color: #000; }
+.page-head { color: #fff; }
+.page-head .page-title { color: #fff; text-shadow: 0 2px 24px rgba(0,0,0,.5); }
+.page-head .label, .page-head .page-sub { color: rgba(255,255,255,.75); }
+.page-head button { background: rgba(255,255,255,.14); color: #fff; backdrop-filter: blur(10px); }
+.page-head button:hover { background: rgba(255,255,255,.26); }
+.page-head button.active { background: #fff; color: #000; }
+
+/* brand logo */
+.brand-logo { width: 34px; height: 34px; border-radius: 9px; display: block; box-shadow: 0 0 0 1px rgba(255,255,255,.18); }
+.login-logo { width: 132px; height: 132px; border-radius: 26px; display: block; margin: 0 auto; box-shadow: 0 0 0 1px var(--line); }

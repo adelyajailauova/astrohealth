@@ -9,21 +9,24 @@ import EvidencePage from './pages/Evidence'
 import GroundPage from './pages/Ground'
 import WellbeingPage from './pages/Wellbeing'
 import LoginPage from './pages/Login'
+import AccountMenu from './AccountMenu'
 import { Navigate } from 'react-router-dom'
 
 const ORDER = ['normal', 'watch', 'alert', 'critical']
 
-function LinkBar({ s }: { s: OnboardState | null }) {
+function LinkBar({ s, staff }: { s: OnboardState | null; staff: boolean }) {
   const t = useT()
   const lang = useLang()
-  if (!s) return <span className="pill"><span className="dot" /> {t('Connecting')}</span>
+  if (!s) return <div className="statusbar"><span className="seg"><span className="dot" /> {t('Connecting')}</span></div>
   const worst = s.crew.reduce((w, c) => (ORDER.indexOf(c.overall) > ORDER.indexOf(w) ? c.overall : w), 'normal')
   return (
-    <div className="linkbar">
-      <span className="pill"><span className={`dot ${worst}`} /> {t('Crew')} · {t(worst)}</span>
-      <span className="pill">{t(s.link.location_name)}</span>
-      <span className="pill">{t('Delay')} {fmtDelayL(lang, s.link.real_delay_s)}{s.link.compression > 1 ? ` · ${t('demo')} ${fmtDelayL(lang, s.link.demo_delay_s)}` : ''}</span>
-      <span className="pill">{s.link.outage ? <><span className="dot watch" /> {t('LOS · storing')}</> : t('Link up')} · Q {s.link.downlink_pending.total}</span>
+    <div className="statusbar" role="status" aria-label={t('Mission status')}>
+      <span className={`seg state ${worst}`}><span className={`dot ${worst}`} />{t(staff ? 'Crew' : 'My status')} · {t(worst)}</span>
+      <span className="seg">{t(s.link.location_name)}</span>
+      <span className="seg">{t('Delay')} <b>{fmtDelayL(lang, s.link.real_delay_s)}</b>{s.link.compression > 1 ? ` · ${t('demo')} ${fmtDelayL(lang, s.link.demo_delay_s)}` : ''}</span>
+      <span className={`seg ${s.link.outage ? 'state watch' : ''}`}>
+        {s.link.outage ? <><span className="dot watch" />{t('LOS · storing')}</> : <><span className="dot normal" />{t('Link up')}</>} · Q {s.link.downlink_pending.total}
+      </span>
     </div>
   )
 }
@@ -66,7 +69,7 @@ function Shell({ user, onLogout, ...prefs }: Prefs & { user: User; onLogout: () 
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand"><span className="brand-mark" aria-hidden="true" />AstroHealth</div>
+        <div className="brand"><img className="brand-logo" src="/brand/garyshcare-icon.jpg" alt="" />GaryshCare</div>
         <nav className="nav">
           <NavLink to="/" end>{t(staff ? 'Crew' : 'My health')}</NavLink>
           {!staff && <NavLink to="/wellbeing">{t('Check-in')}</NavLink>}
@@ -74,12 +77,9 @@ function Shell({ user, onLogout, ...prefs }: Prefs & { user: User; onLogout: () 
           <NavLink to="/evidence">{t('Evidence')}</NavLink>
         </nav>
         <div className="spacer" />
-        <LinkBar s={onboard} />
+        <LinkBar s={onboard} staff={staff} />
         <Toggles {...prefs} />
-        <div className="row" style={{ gap: 8 }}>
-          <span className="pill" title={user.username}>{t(staff ? 'Medical staff' : 'Astronaut')} · {t(user.name)}</span>
-          <button onClick={onLogout} style={{ fontSize: 13, padding: '6px 12px' }}>{t('Sign out')}</button>
-        </div>
+        <AccountMenu user={user} onLogout={onLogout} />
       </header>
       <Routes>
         <Route path="/" element={<CrewPage state={onboard} />} />
@@ -120,10 +120,11 @@ export default function App() {
       <ThemeContext.Provider value={theme}>
         <MetaContext.Provider value={meta}>
           <UserContext.Provider value={user}>
+            <div className="photo-credit">Photo: NASA · ISS030-E-055569</div>
             <BrowserRouter>
               {user ? <Shell key={user.username} user={user} onLogout={logout} {...prefs} /> : (
-                <div className="app">
-                  <header className="topbar"><div className="spacer" /><Toggles {...prefs} /></header>
+                <div className="app login-shell">
+                  <header className="topbar" style={{ position: 'relative', zIndex: 1 }}><div className="spacer" /><Toggles {...prefs} /></header>
                   {!checking && <LoginPage onLogin={setUser} />}
                 </div>
               )}
