@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { post, useMeta } from '../api'
 import type { CrewState, Finding, OnboardState, Status } from '../api'
 import { BodyFigure, EcgStrip, SourceList, StatusBadge, TrendChart } from '../components'
+import AiForecast from '../AiForecast'
 import { agoL, unit, useLang, useT } from '../i18n'
 
 const ZONE_NAMES: Record<string, string> = {
@@ -197,6 +198,8 @@ export default function CrewPage({ state }: { state: OnboardState | null }) {
             <div className="label" style={{ marginTop: 14, color: 'var(--faint)' }}>{t('Tap a body zone or a reading for details')}</div>
           </div>
         </div>
+
+        <AiForecast crewId={c.id} />
 
         <div className="card">
           <div className="row" style={{ justifyContent: 'space-between' }}>

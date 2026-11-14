@@ -67,6 +67,13 @@ export interface GroundState {
   sent: Msg<{ crew_id: string; text: string }>[]
 }
 
+export interface AiSummary {
+  ready: boolean; unavailable?: boolean; have?: number; need?: number
+  level: number; level_name: 'NORMAL' | 'WATCH' | 'ALERT' | 'CRITICAL'; text: string
+  risks: { metric: string; horizon: number; value: number; dir: 'above' | 'below' }[]
+  forecast: Record<string, { current: number; trend: 'rising' | 'falling' | 'stable'; horizons: Record<string, { pred: number; low: number; high: number }> }>
+}
+
 export interface Source { org: string; title: string; url: string; quote: string }
 export interface MetricInfo { name: string; unit: string; zone: string; why: string; how: string; sources: string[] }
 export interface Meta {

@@ -12,6 +12,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, WebSocket, WebSocke
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from . import ai as ai_layer
 from . import assess as A
 from . import auth
 from .comms import DEMO_COMPRESSION, LOCATIONS, Link, demo_delay
@@ -119,7 +120,7 @@ async def loop() -> None:
             st = evaluate(cid)
             current[cid] = st
             v = st["vitals"]
-            history[cid].append({"t": time.time(), **{k: v[k] for k in ("hr", "sys", "dia", "spo2", "rr", "temp")}})
+            history[cid].append({"t": time.time(), "activity": v["activity"], **{k: v[k] for k in ("hr", "sys", "dia", "spo2", "rr", "temp")}})
             detect_changes(cid, st)
         if tick % 2 == 0:
             downlink.send("telemetry", "telemetry", {
@@ -138,6 +139,7 @@ async def loop() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    await asyncio.to_thread(ai_layer.get_ai)  # load the model before the first request
     task = asyncio.create_task(loop())
     yield
     task.cancel()
@@ -257,6 +259,25 @@ def gstate(_: dict = Depends(require_staff)):
 def get_history(crew_id: str, user: dict = Depends(current_user)):
     require_crew_access(user, crew_id)
     return {"vitals": list(history[crew_id]), "checkins": checkin_log[crew_id]}
+
+
+_ai_cache: dict = {}
+
+
+@app.get("/api/ai/{crew_id}")
+def get_ai_summary(crew_id: str, lang: str = "ru", user: dict = Depends(current_user)):
+    """AI forecast + explanation. Astronauts get their own record (with private check-in data); staff never get private data."""
+    require_crew_access(user, crew_id)
+    ai = ai_layer.get_ai()
+    if ai is None:
+        return {"ready": False, "unavailable": True}
+    private = user["role"] == "astronaut"
+    key = (crew_id, tick, lang, private)
+    if key not in _ai_cache:
+        if len(_ai_cache) > 200:
+            _ai_cache.clear()
+        _ai_cache[key] = ai_layer.ai_summary(ai, history[crew_id], current.get(crew_id, {}).get("findings", []), lang, private)
+    return _ai_cache[key]
 
 
 class ScenarioIn(BaseModel):
