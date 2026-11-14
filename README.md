@@ -20,6 +20,8 @@
 - **frontend/** — React + TypeScript + Vite + Recharts: экраны экипажа, Mission Control, wellbeing, Evidence.
 
 ## Запуск
+Для команды: как клонировать проект, работать в ветках и открывать Pull Request — в [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r backend/requirements.txt
 ```
