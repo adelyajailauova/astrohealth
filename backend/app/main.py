@@ -1,4 +1,4 @@
-"""AstroHealth backend: onboard health node + simulated space link to Mission Control."""
+"""GaryshCare backend: onboard health node + simulated space link to Mission Control."""
 
 from __future__ import annotations
 
@@ -145,7 +145,7 @@ async def lifespan(_: FastAPI):
         await task
 
 
-app = FastAPI(title="AstroHealth", lifespan=lifespan)
+app = FastAPI(title="GaryshCare", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 

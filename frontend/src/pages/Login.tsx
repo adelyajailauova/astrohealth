@@ -35,7 +35,7 @@ export default function LoginPage({ onLogin }: { onLogin: (u: User) => void }) {
     <div style={{ minHeight: '80vh', display: 'grid', placeItems: 'center', padding: '24px 0' }}>
       <form className="card" onSubmit={submit} style={{ width: 'min(420px, 100%)', padding: 28, display: 'grid', gap: 18 }}>
         <div>
-          <div className="brand" style={{ marginBottom: 18 }}><span className="brand-mark" aria-hidden="true" />AstroHealth</div>
+          <div className="brand" style={{ marginBottom: 18 }}><span className="brand-mark" aria-hidden="true" />GaryshCare</div>
           <h1 className="page-title" style={{ fontSize: 32 }}>{t('Sign in')}</h1>
           <div className="page-sub">{t('Astronauts see only their own data. Medical staff see the whole crew.')}</div>
         </div>

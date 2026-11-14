@@ -1,4 +1,4 @@
-# AstroHealth: мониторинг здоровья астронавтов
+# GaryshCare: мониторинг здоровья астронавтов
 
 Прототип для хакатона «Create Health Monitoring Software for Astronauts on Space Missions».
 
