@@ -142,7 +142,7 @@ export function EcgStrip({ hr, irregular, status }: { hr: number; irregular: boo
     return () => cancelAnimationFrame(raf)
   }, [status, theme])
 
-  return <canvas ref={ref} style={{ width: '100%', height: 150, borderRadius: 14, display: 'block' }} />
+  return <canvas ref={ref} style={{ width: '100%', height: 150, borderRadius: 6, display: 'block' }} />
 }
 
 const TREND_CFG: Record<string, { keys: string[]; label: string; normal?: [number, number]; domain?: [number, number] }> = {
@@ -186,7 +186,7 @@ export function TrendChart({ crewId, metric }: { crewId: string; metric: string 
           <YAxis tick={AXIS} axisLine={false} tickLine={false} domain={cfg.domain} allowDataOverflow />
           {cfg.normal && <ReferenceArea y1={cfg.normal[0]} y2={cfg.normal[1]} fill="var(--band)" fillOpacity={1} />}
           <Tooltip
-            contentStyle={{ background: 'var(--surface)', border: 'none', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,.12)', fontSize: 12 }}
+            contentStyle={{ background: 'var(--surface)', border: 'none', borderRadius: 6, boxShadow: '0 4px 20px rgba(0,0,0,.12)', fontSize: 12 }}
             labelStyle={{ color: 'var(--muted)' }} itemStyle={{ color: 'var(--text)' }}
             labelFormatter={(l) => `${l} ${unit(lang, 's')}`} />
           {cfg.keys.map((k, i) => (

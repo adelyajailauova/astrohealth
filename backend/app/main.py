@@ -149,14 +149,14 @@ app = FastAPI(title="GaryshCare", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
-def link_info() -> dict:
+def link_info(crew_id: str | None = None) -> dict:
     loc = LOCATIONS[sim.location]
     return {
         "location": sim.location, "location_name": loc["name"],
         "real_delay_s": loc["real_delay_s"], "demo_delay_s": demo_delay(sim.location),
         "compression": DEMO_COMPRESSION if loc["real_delay_s"] > 10 else 1,
         "delay_source": loc["source"], "outage": downlink.outage,
-        "downlink_pending": downlink.pending(), "uplink_pending": uplink.pending(),
+        "downlink_pending": downlink.pending(crew_id), "uplink_pending": uplink.pending(crew_id),
     }
 
 
@@ -165,7 +165,7 @@ def onboard_state(user: dict) -> dict:
     own = user.get("crew_id")
     visible = (lambda cid: True) if user["role"] == "staff" else (lambda cid: cid == own)
     return {
-        "t": time.time(), "link": link_info(),
+        "t": time.time(), "link": link_info(None if user["role"] == "staff" else own),
         "crew": [s for cid, s in current.items() if visible(cid)],
         "events": [e for e in onboard_events if visible(e["crew_id"])][:15],
         "inbox": {cid: msgs[:10] for cid, msgs in onboard_inbox.items() if visible(cid)},

@@ -250,8 +250,8 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
               <CartesianGrid stroke="var(--line)" vertical={false} />
               <XAxis dataKey="day" tick={{ fill: 'var(--muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis yAxisId="l" domain={[0, 10]} tick={{ fill: 'var(--muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: 'var(--surface)', border: 'none', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,.12)', fontSize: 12 }} itemStyle={{ color: 'var(--text)' }} />
-              <Bar yAxisId="l" dataKey="sleep_hours" name={t('Sleep (h)')} fill="var(--surface-3)" radius={[6, 6, 0, 0]} />
+              <Tooltip contentStyle={{ background: 'var(--surface)', border: 'none', borderRadius: 6, boxShadow: '0 4px 20px rgba(0,0,0,.12)', fontSize: 12 }} itemStyle={{ color: 'var(--text)' }} />
+              <Bar yAxisId="l" dataKey="sleep_hours" name={t('Sleep (h)')} fill="var(--surface-3)" radius={[2, 2, 0, 0]} />
               <Line yAxisId="l" dataKey="mood" name={t('Mood (1-5)')} stroke="var(--chart-1)" strokeWidth={1.75} dot={false} />
               <Line yAxisId="l" dataKey="stress" name={t('Stress (1-5)')} stroke="var(--watch)" strokeWidth={1.75} dot={false} strokeDasharray="4 3" />
             </ComposedChart>
