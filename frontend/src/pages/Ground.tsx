@@ -24,17 +24,25 @@ export default function GroundPage({ state }: { state: GroundState | null }) {
   }
 
   return (
-    <div className="grid cols-ground" style={{ gridTemplateColumns: '1fr 420px' }}>
+    <>
+    <div className="page-head">
+      <div>
+        <div className="label">Flight surgeon console · {link.location_name}</div>
+        <h1 className="page-title">Mission Control</h1>
+      </div>
+      <div className="label">Telemetry age {age != null ? `${age.toFixed(1)} s` : '—'}</div>
+    </div>
+    <div className="grid cols-ground" style={{ gridTemplateColumns: 'minmax(0, 1fr) 400px' }}>
       <div className="grid" style={{ alignContent: 'start' }}>
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
           {Object.entries(tel).map(([cid, c]) => (
-            <div key={cid} className="card" style={{ borderTop: `3px solid var(--${c.overall})` }}>
+            <div key={cid} className="card">
               <div className="row" style={{ justifyContent: 'space-between' }}>
-                <h3>{c.name}</h3><StatusBadge s={c.overall} />
+                <h3 className="row" style={{ gap: 8 }}><span className={`dot ${c.overall}`} />{c.name}</h3><StatusBadge s={c.overall} />
               </div>
               <table className="small" style={{ marginTop: 6 }}>
                 <tbody>
-                  <tr><td className="muted">HR</td><td>{c.vitals.hr.toFixed(0)} bpm {c.vitals.irregular && <b className="status alert">irregular</b>}</td></tr>
+                  <tr><td className="muted">HR</td><td>{c.vitals.hr.toFixed(0)} bpm {c.vitals.irregular && <span className="status alert"> · irregular</span>}</td></tr>
                   <tr><td className="muted">BP</td><td>{c.vitals.sys}/{c.vitals.dia}</td></tr>
                   <tr><td className="muted">SpO2</td><td>{c.vitals.spo2.toFixed(0)}%</td></tr>
                   <tr><td className="muted">Temp</td><td>{c.vitals.temp.toFixed(1)} °C</td></tr>
@@ -43,7 +51,7 @@ export default function GroundPage({ state }: { state: GroundState | null }) {
               </table>
             </div>
           ))}
-          {Object.keys(tel).length === 0 && <div className="card muted">Waiting for first telemetry frame… (light-time delay)</div>}
+          {Object.keys(tel).length === 0 && <div className="card muted">Waiting for the first telemetry frame. Light-time delay applies.</div>}
         </div>
 
         <div className="card">
@@ -61,7 +69,7 @@ export default function GroundPage({ state }: { state: GroundState | null }) {
                 const p = r.payload
                 return (
                   <tr key={r.id}>
-                    <td><StatusBadge s={r.priority} />{p.private && <div className="small muted">🔒 private</div>}</td>
+                    <td><StatusBadge s={r.priority} />{p.private && <div className="label" style={{ marginTop: 6 }}>Private</div>}</td>
                     <td>{p.crew}</td>
                     <td>
                       <b>{p.metric_name}</b>: {p.label}<div className="small muted">{p.value}</div>
@@ -99,7 +107,7 @@ export default function GroundPage({ state }: { state: GroundState | null }) {
           {link.delay_source && <div style={{ marginTop: 6 }}><SourceList ids={[link.delay_source]} compact /></div>}
           <div className="small muted" style={{ marginTop: 6 }}>Moon delay: 384,400 km ÷ speed of light ≈ 1.3 s. Critical reports jump the queue; telemetry waits.</div>
           <button style={{ marginTop: 10 }} className={link.outage ? 'active' : ''} onClick={() => post('/api/link', { outage: !link.outage })}>
-            {link.outage ? '▶ Restore signal' : '⏸ Simulate loss of signal'}
+            {link.outage ? 'Restore signal' : 'Simulate loss of signal'}
           </button>
           {link.outage && <div className="status watch small" style={{ marginTop: 6 }}>Loss of signal – onboard keeps assessing and stores reports (store-and-forward).</div>}
         </div>
@@ -112,7 +120,7 @@ export default function GroundPage({ state }: { state: GroundState | null }) {
               {Object.keys(tel).length === 0 && <option value="c1">c1</option>}
             </select>
           </div>
-          <textarea rows={3} value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. Reviewed your ECG. Rest 30 min, repeat measurement, then call us." />
+          <textarea rows={3} value={text} onChange={(e) => setText(e.target.value)} placeholder="Reviewed your ECG. Rest 30 min, repeat the measurement, then call us." />
           <div className="row" style={{ marginTop: 8, justifyContent: 'space-between' }}>
             <span className="small muted">arrives in {fmtDelay(link.demo_delay_s)} (demo)</span>
             <button className="primary" onClick={send}>Send</button>
@@ -125,5 +133,6 @@ export default function GroundPage({ state }: { state: GroundState | null }) {
         </div>
       </div>
     </div>
+    </>
   )
 }

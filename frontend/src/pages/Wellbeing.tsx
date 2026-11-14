@@ -4,15 +4,18 @@ import { post } from '../api'
 import type { Finding, OnboardState } from '../api'
 import { SourceList, StatusBadge } from '../components'
 
-const MOODS = ['😞', '🙁', '😐', '🙂', '😄']
+const MOOD_WORDS = ['Very low', 'Low', 'Okay', 'Good', 'Great']
 const SYMPTOMS = ['dizziness', 'fainting', 'headache', 'vision changes', 'palpitations', 'nausea', 'rash', 'trouble sleeping']
 
-function Scale({ value, onChange, labels }: { value: number; onChange: (n: number) => void; labels?: string[] }) {
+function Scale({ value, onChange, words }: { value: number; onChange: (n: number) => void; labels?: string[]; words?: string[] }) {
   return (
-    <div className="slider">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} className={value === n ? 'active' : ''} onClick={() => onChange(n)}>{labels ? labels[n - 1] : n}</button>
-      ))}
+    <div className="row" style={{ gap: 10 }}>
+      <div className="slider">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} className={value === n ? 'active' : ''} onClick={() => onChange(n)} aria-label={words ? words[n - 1] : String(n)}>{n}</button>
+        ))}
+      </div>
+      {words && value > 0 && <span className="small muted">{words[value - 1]}</span>}
     </div>
   )
 }
@@ -64,7 +67,7 @@ function Practice({ crewId, kind, onDone }: { crewId: string; kind: 'breathing' 
     <div>
       {!running && elapsed === 0 && (
         <div className="grid" style={{ gap: 10 }}>
-          <div className="row"><span className="muted" style={{ width: 140 }}>Mood right now</span><Scale value={moodBefore} onChange={setMoodBefore} labels={MOODS} /></div>
+          <div className="row"><span className="muted" style={{ width: 140 }}>Mood right now</span><Scale value={moodBefore} onChange={setMoodBefore} words={MOOD_WORDS} /></div>
           {kind === 'breathing' && (
             <div className="row">
               <span className="muted" style={{ width: 140 }}>Pace</span>
@@ -84,8 +87,9 @@ function Practice({ crewId, kind, onDone }: { crewId: string; kind: 'breathing' 
         <div>
           {kind === 'breathing' ? (
             <div className="breath-wrap">
+              <div className="breath-ticks" />
               <div className="breath" style={{ transform: `scale(${scale})`, transitionDuration: '100ms' }} />
-              <div className="breath-label">{inPhase ? 'Breathe in – belly rises' : 'Breathe out slowly'}</div>
+              <div className="breath-label">{inPhase ? 'Breathe in, belly rises' : 'Breathe out slowly'}</div>
             </div>
           ) : (
             <div className="breath-wrap" style={{ height: 200 }}>
@@ -105,7 +109,7 @@ function Practice({ crewId, kind, onDone }: { crewId: string; kind: 'breathing' 
       {finished && !running && (
         <div className="grid" style={{ gap: 10 }}>
           <div>Session complete. How do you feel now?</div>
-          <Scale value={moodAfter ?? 0} onChange={setMoodAfter} labels={MOODS} />
+          <Scale value={moodAfter ?? 0} onChange={setMoodAfter} words={MOOD_WORDS} />
           <div><button className="primary" disabled={moodAfter == null} onClick={save}>Save (+15 pts)</button></div>
         </div>
       )}
@@ -143,7 +147,14 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
   }
 
   return (
-    <div className="grid cols-2" style={{ gridTemplateColumns: '1fr 1fr' }}>
+    <>
+    <div className="page-head">
+      <div>
+        <div className="label">Daily routine · private to you and the flight surgeon</div>
+        <h1 className="page-title">Check-in</h1>
+      </div>
+    </div>
+    <div className="grid cols-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)' }}>
       <div className="grid" style={{ alignContent: 'start' }}>
         <div className="card">
           <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -153,7 +164,7 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
             </select>
           </div>
           <div className="grid" style={{ gap: 12, marginTop: 12 }}>
-            <div className="row"><span className="muted" style={{ width: 150 }}>Mood</span><Scale value={mood} onChange={setMood} labels={MOODS} /></div>
+            <div className="row"><span className="muted" style={{ width: 150 }}>Mood</span><Scale value={mood} onChange={setMood} words={MOOD_WORDS} /></div>
             <div className="row"><span className="muted" style={{ width: 150 }}>Stress (1 low – 5 high)</span><Scale value={stress} onChange={setStress} /></div>
             <div className="row"><span className="muted" style={{ width: 150 }}>Sleep last night</span>
               <input type="range" min={0} max={10} step={0.5} value={sleep} onChange={(e) => setSleep(+e.target.value)} /> <b>{sleep} h</b>
@@ -185,14 +196,14 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
               {result.findings.map((f) => (
                 <div key={f.metric} className="event">
                   <div className="row"><StatusBadge s={f.status} /><b>{f.label}</b><span className="muted small">{f.value}</span></div>
-                  <div className="small">➜ {f.advice}</div>
+                  <div className="small advice">{f.advice}</div>
                   <SourceList ids={f.sources} compact />
                 </div>
               ))}
               {result.suggest_wellbeing && (
-                <div className="banner alert" style={{ marginTop: 10 }}>
-                  <span style={{ fontSize: 22 }}>🫁</span>
-                  <div>Your check-in suggests stress or low sleep. A short <b>slow-breathing</b> session is recommended now →</div>
+                <div className="banner watch" style={{ marginTop: 12 }}>
+                  <span className="dot watch" />
+                  <div>Your check-in suggests stress or short sleep. A 3-minute slow-breathing session is recommended now.</div>
                 </div>
               )}
             </div>
@@ -203,13 +214,13 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
           <h2>Mood & sleep trend</h2>
           <ResponsiveContainer width="100%" height={200}>
             <ComposedChart data={hist} margin={{ left: -20, right: 10 }}>
-              <CartesianGrid stroke="#1e2a44" strokeDasharray="3 3" />
-              <XAxis dataKey="day" tick={{ fill: '#8b9ab8', fontSize: 11 }} />
-              <YAxis yAxisId="l" domain={[0, 10]} tick={{ fill: '#8b9ab8', fontSize: 11 }} />
-              <Tooltip contentStyle={{ background: '#0f1626', border: '1px solid #22304d' }} />
-              <Bar yAxisId="l" dataKey="sleep_hours" name="Sleep (h)" fill="#5ab0ff55" />
-              <Line yAxisId="l" dataKey="mood" name="Mood (1-5)" stroke="#34d399" strokeWidth={2} />
-              <Line yAxisId="l" dataKey="stress" name="Stress (1-5)" stroke="#fb7a3c" strokeWidth={2} />
+              <CartesianGrid stroke="var(--line)" vertical={false} />
+              <XAxis dataKey="day" tick={{ fill: 'var(--muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="l" domain={[0, 10]} tick={{ fill: 'var(--muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: 'var(--surface)', border: 'none', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,.12)', fontSize: 12 }} itemStyle={{ color: 'var(--text)' }} />
+              <Bar yAxisId="l" dataKey="sleep_hours" name="Sleep (h)" fill="var(--surface-3)" radius={[6, 6, 0, 0]} />
+              <Line yAxisId="l" dataKey="mood" name="Mood (1-5)" stroke="var(--chart-1)" strokeWidth={1.75} dot={false} />
+              <Line yAxisId="l" dataKey="stress" name="Stress (1-5)" stroke="var(--watch)" strokeWidth={1.75} dot={false} strokeDasharray="4 3" />
             </ComposedChart>
           </ResponsiveContainer>
           <div className="small muted">Earlier days are seeded demo data. Recommended sleep: 7–9 h.</div>
@@ -222,8 +233,8 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <h2 style={{ margin: 0 }}>Wellbeing practices</h2>
             <div className="row">
-              <span className="pill">⭐ {c.wellbeing.points} pts</span>
-              <span className="pill">🔥 {c.wellbeing.streak}-day streak</span>
+              <span className="pill">{c.wellbeing.points} pts</span>
+              <span className="pill">{c.wellbeing.streak}-day streak</span>
             </div>
           </div>
           <div className="row" style={{ margin: '12px 0' }}>
@@ -243,7 +254,7 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
           </ul>
           <div style={{ marginTop: 8 }}><SourceList ids={['nasa_std3001_v1_3004', 'nccih_relax', 'nccih_meditation', 'nasa_behavior']} /></div>
           <div className="banner" style={{ marginTop: 10 }}>
-            <span>⚠</span>
+            <span className="dot" />
             <div className="small">Not a medical treatment. NCCIH notes ~8% of people report negative effects (mostly anxiety). If you feel worse, stop and request a private conference with the crew psychologist.</div>
           </div>
         </div>
@@ -253,12 +264,13 @@ export default function WellbeingPage({ state }: { state: OnboardState | null })
           {c.wellbeing.sessions.length === 0 && <div className="muted small">No sessions yet.</div>}
           {c.wellbeing.sessions.slice(0, 5).map((s, i) => (
             <div key={i} className="event small row" style={{ justifyContent: 'space-between' }}>
-              <span>{s.kind === 'breathing' ? '🫁 Breathing' : '🧘 Body scan'} · {s.minutes} min</span>
-              <span>{s.mood_before != null && MOODS[s.mood_before - 1]} → {s.mood_after != null && MOODS[s.mood_after - 1]}</span>
+              <span>{s.kind === 'breathing' ? 'Slow breathing' : 'Body scan'} · {s.minutes} min</span>
+              <span className="label">Mood {s.mood_before ?? '–'} → {s.mood_after ?? '–'}</span>
             </div>
           ))}
         </div>
       </div>
     </div>
+    </>
   )
 }

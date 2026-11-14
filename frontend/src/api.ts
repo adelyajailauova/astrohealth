@@ -98,6 +98,15 @@ export function useSocket<T>(path: string): T | null {
 export const MetaContext = createContext<Meta | null>(null)
 export const useMeta = () => useContext(MetaContext)
 
+export type Theme = 'light' | 'dark'
+export const ThemeContext = createContext<Theme>('light')
+export const useTheme = () => useContext(ThemeContext)
+
+/** Read a CSS custom property (for canvas drawing, which can't use var()). */
+export function cssVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
 export const STATUS_LABEL: Record<Status, string> = {
   normal: 'Normal', watch: 'Watch', alert: 'Alert', critical: 'Critical',
 }
